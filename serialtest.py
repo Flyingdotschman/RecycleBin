@@ -1,11 +1,11 @@
 import serial
 from binascii import hexlify
-
+from time import sleep
 try:
     serialPort = serial.Serial('/dev/ttyS0')
 except:
-        tt = subprocess.Popen(["chmod", "666", "/dev/ttyS0"], stdout=subprocess.PIPE)
-        serialPort = serial.Serial('/dev/ttyACM0')
+    tt = subprocess.Popen(["chmod", "666", "/dev/ttyS0"], stdout=subprocess.PIPE)
+    serialPort = serial.Serial('/dev/ttyACM0')
 
 data = "02 31 37 30 31 52 30 31 30 31 30 30"
 ata = "02 30 30 30 31 52 30 31 30 37 30 30 30 30 03"
@@ -42,19 +42,14 @@ for b in data_in_bytes:
     print(chr(b))
 
 #serialPort.write(bytearray.fromhex(ata))
-serialPort.write(data_in_bytes)
-serialString = []
-s_String = []
-#s_String = serialPort.readline()
+while 1:
+    serialPort.write(data_in_bytes)
+    serialString = []
+    s_String = []
+    s_String = serialPort.readline()
 
-while s_String!=b'\r':
-    
-    s_String = serialPort.read()
-    
+    print(s_String)
+    print(s_String[12:22])
 
-    serialString += s_String.decode('Ascii')
-    s_String = serialPort.read(1)
-    print(serialString) 
-    print(str(s_String))
-print(serialString)    # Print the contents of the serial data
- 
+    sleep(1)
+
