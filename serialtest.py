@@ -45,6 +45,8 @@ for b in data_in_bytes:
 serialPort.write(data_in_bytes)
 serialString = []
 s_String = []
+#s_String = serialPort.readline()
+
 while s_String!=b'\r':
     
     s_String = serialPort.read()
@@ -52,6 +54,7 @@ while s_String!=b'\r':
 
     serialString += s_String.decode('Ascii')
     s_String = serialPort.read(1)
+    print(serialString) 
     print(str(s_String))
 print(serialString)    # Print the contents of the serial data
  
