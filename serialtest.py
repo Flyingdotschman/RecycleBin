@@ -31,7 +31,6 @@ def stop_sending(port):
 def calc_lrc(data_in_bytes):
     lrc = 0
     for b in data_in_bytes[1:]:
-    
         lrc ^= b
     lrc = str(lrc)
     return lrc
@@ -50,25 +49,35 @@ def send_data(data,serialPort):
 
 def read_gewicht(serialSubstring):
     c = 0
+    sign = 1
     for count, s in enumerate(serialSubstring):
         s=chr(s) 
-        print(s)
+       # print(s)
         if s == ' ':
             s = '0'
-
-        if count == 2:
-            c += int(s) * 10
-
-        if count == 3:
-            c += int(s)
-        if count == 5:
-            c += int(s) * 0.1
-        if count == 6:
-            c += int(s) * 0.01
-        if count == 7:
-            c += int(s) * 0.001
-
-    gewicht = c
+            continue
+        if s == '-':
+            sign = -1 
+            print("MINUS!!!!")
+            continue
+        if s.isnumeric(): 
+            if count == 2:
+                c += int(s) * 10
+                continue
+            if count == 3:
+                c += int(s)
+                continue
+            if count == 5:
+                c += int(s) * 0.1
+                continue
+            if count == 6:
+                c += int(s) * 0.01
+                continue
+            if count == 7:
+                c += int(s) * 0.001
+                continue
+        print(c)
+    gewicht = c*sign
     print(gewicht)
 
 
@@ -85,6 +94,8 @@ if __name__ == '__main__':
             print(s_String)
             serialSubstring=s_String[13:21]
             print(serialSubstring)
+            read_gewicht(serialSubstring)
+
             try:
                 read_gewicht(serialSubstring)
             except:
