@@ -9,7 +9,7 @@ def starte_port():
     serialPort.paritiy = serial.PARITY_NONE
     serialPort.stopbits = serial.STOPBITS_ONE
     serialPort.bytesize = serial.EIGHTBITS
-    serialPort.timeout = 0.05
+    serialPort.timeout = 1
     return serialPort
 
 
@@ -55,7 +55,7 @@ def get_all(port):
 
 def set_weight_unit_v1(port):
     print("ChatGPT")
-    data= "02 30 30 30 31 57 30 30 32 30 30 32 55 6B"
+    data= "02 30 30 30 31 57 30 30 32 30 30 32 4B 47"
     send_data(data,port)
     print(serialPort.readline().decode('Ascii'))
 
@@ -65,49 +65,49 @@ def set_weight_unit(port):
     vorhin=start
     print("set_weight_unit")
 #    data= "02 30 30 30 31 57 30 30 32 30 30 32 30 32"
-    data= "02 30 30 30 31 57 30 30 32 30 30 32 "
+    data= "02 30 30 30 31 57 30 30 32 30 30 31 "
     
 
    # for b in range(0,65535):
-    for a in range(0,255):
+    for a in range(47,58):
         jetzt=clock()
         gesamt=jetzt-start
         durch = jetzt - vorhin
         vorhin = jetzt
         print(f'Durchlauf {a}; Gesamt: {gesamt}, Zeit pro Durchlauf: {durch}')
 
-        for b in range(0,255):
-    #        print(f'a={a} und b={b}')
-            data_in_bytes  = bytearray.fromhex(data)
-            t1=a.to_bytes(1,'big')
-            t2=b.to_bytes(1,'big')
-            data_in_bytes.extend(t1)
-    #        print(data_in_bytes)
-            data_in_bytes.extend(t2)
-            lrc = calc_lrc(data_in_bytes)
-            for c in lrc:
-                data_in_bytes.extend(c.encode())
-     
-            x = bytes.fromhex('03')
-            data_in_bytes.extend(x)
-    #        print(data_in_bytes)
-            serialPort.write(data_in_bytes)
+    #for b in range(0,255):
+#        print(f'a={a} und b={b}')
+        data_in_bytes  = bytearray.fromhex(data)
+        t1=a.to_bytes(1,'big')
+     #   t2=b.to_bytes(1,'big')
+        data_in_bytes.extend(t1)
+#        print(data_in_bytes)
+      #  data_in_bytes.extend(t2)
+        lrc = calc_lrc(data_in_bytes)
+        for c in lrc:
+            data_in_bytes.extend(c.encode())
+ 
+        x = bytes.fromhex('03')
+        data_in_bytes.extend(x)
+#        print(data_in_bytes)
+        serialPort.write(data_in_bytes)
 
-            #print(f'Frage : {data_in_bytes}')
-            strung=serialPort.readline().decode('Ascii')
-            if len(strung) > 11:
+        #print(f'Frage : {data_in_bytes}')
+        strung=serialPort.readline().decode('Ascii')
+        if len(strung) > 11:
 #                print(f'Frage : {data_in_bytes}')
 
- #               print(f'Falsche Antwort {strung}')
-                #print(strung[12])
-                if strung[12]!='3':
-                    print('*********************** Achtung ******************************')
-                    print(f'Antwort bekommen: {strung}; Frage: {data_in_bytes} mit{a} u  {b}')
-                    get_weight_value(port)
-                    get_weight_unit(port)
-    #            print(serialPort.readline().decode('Ascii'))
-    #            print(serialPort.readline().decode('Ascii'))
-    #            sleep(1)
+            print(f'Falsche Antwort {strung}')
+            #print(strung[12])
+            if strung[12]!='3':
+                print('*********************** Achtung ******************************')
+                print(f'Antwort bekommen: {strung}; Frage: {data_in_bytes} mit {a}')
+                get_weight_value(port)
+                get_weight_unit(port)
+#            print(serialPort.readline().decode('Ascii'))
+#            print(serialPort.readline().decode('Ascii'))
+#            sleep(1)
 
 def get_max_weight(port):
     print("get_max_weight m1")
@@ -115,7 +115,13 @@ def get_max_weight(port):
     send_data(data,port)
     print(serialPort.readline().decode('Ascii'))
     print(serialPort.readline().decode('Ascii'))
+    print("get_max_weight e1")
+    data= "02 30 30 30 31 52 30 30 32 33 30 30"
+    send_data(data,port)
+    print(serialPort.readline().decode('Ascii'))
+    print(serialPort.readline().decode('Ascii'))
 
+    
     print(serialPort.readline().decode('Ascii'))
     print("get_max_weight m2")
     data= "02 30 30 30 31 52 30 30 32 34 30 30"
@@ -124,6 +130,30 @@ def get_max_weight(port):
     print(serialPort.readline().decode('Ascii'))
 
     print(serialPort.readline().decode('Ascii'))
+    print("get_max_weight e2")
+    data= "02 30 30 30 31 52 30 30 32 35 30 30"
+    send_data(data,port)
+    print(serialPort.readline().decode('Ascii'))
+    print(serialPort.readline().decode('Ascii'))
+
+
+def set_max_weights(port):
+    print('Setting Maximum Weights')
+    print('Setting max1')
+    data_m1="02 30 30 30 31 57 30 30 32 32 30 35 33 30 30 30 30"
+    send_data(data_m1,port)
+    print(serialPort.readline().decode('Ascii'))
+
+    print('Setting e1')
+    data_e1="02 30 30 30 31 57 30 30 32 33 30 31 35"
+    send_data(data_e1,port)
+    print(serialPort.readline().decode('Ascii'))
+    print('Setting max2')
+    data_m2="02 30 30 30 31 57 30 30 32 34 30 38 36 30 30 30 30 30 30 30"
+    send_data(data_m2,port)
+    print(serialPort.readline().decode('Ascii'))
+
+
 
 def get_status(port):
     print("get_status")
@@ -160,6 +190,69 @@ def get_tare(port):
     print(serialPort.readline().decode('Ascii'))
     print(serialPort.readline().decode('Ascii'))
 
+def get_scale_adj(port):
+    print('init_zero')
+    data= "02 30 30 30 31 52 30 30 33 30 30 30"
+    send_data(data,port)
+    print(serialPort.readline().decode('Ascii'))
+    print(serialPort.readline().decode('Ascii'))
+    print(serialPort.readline().decode('Ascii'))
+
+    print('slope')
+    data= "02 30 30 30 31 52 30 30 33 31 30 30"
+    send_data(data,port)
+    print(serialPort.readline().decode('Ascii'))
+    print(serialPort.readline().decode('Ascii'))
+    print(serialPort.readline().decode('Ascii'))
+
+    print('precal')
+    data= "02 30 30 30 31 52 30 30 33 32 30 30"
+    send_data(data,port)
+    print(serialPort.readline().decode('Ascii'))
+    print(serialPort.readline().decode('Ascii'))
+    print(serialPort.readline().decode('Ascii'))
+
+def get_zero_indicator(port):
+    print('precal')
+    data= "02 30 30 30 31 52 30 31 30 35 30 30"
+    send_data(data,port)
+    print(serialPort.readline().decode('Ascii'))
+    print(serialPort.readline().decode('Ascii'))
+    print(serialPort.readline().decode('Ascii'))
+
+def set_scale_adj(port):
+    print('init_zero')
+    data= "02 30 30 30 31 57 30 30 33 30 30 35 34 30 34 34 32"
+    send_data(data,port)
+    print(serialPort.readline().decode('Ascii'))
+    print(serialPort.readline().decode('Ascii'))
+    print(serialPort.readline().decode('Ascii'))
+
+    print('slope')
+    data= "02 30 30 30 31 57 30 30 33 31 30 36 31 30 32 30 35 30"
+    send_data(data,port)
+    print(serialPort.readline().decode('Ascii'))
+    print(serialPort.readline().decode('Ascii'))
+    print(serialPort.readline().decode('Ascii'))
+
+
+def do_initial_adj(port):
+    print('intial zero adj')
+    data =  "02 30 30 30 31 45 31 30 33 30 30 30"
+    send_data(data,port)
+    print(serialPort.readline().decode('Ascii'))
+    print(serialPort.readline().decode('Ascii'))
+    print(serialPort.readline().decode('Ascii'))
+
+def span_adj(port):
+    print('span adj')
+    data =  "02 30 30 30 31 45 31 30 33 31 30 30"
+    send_data(data,port)
+    print(serialPort.readline().decode('Ascii'))
+    print(serialPort.readline().decode('Ascii'))
+    print(serialPort.readline().decode('Ascii'))
+
+
 
 def get_number_of_pieces(port):
     print("get_number_of_pieces")
@@ -178,6 +271,20 @@ def get_range_mode(port):
     print(serialPort.readline().decode('Ascii'))
 
 
+def get_weight_value_for_adjust(port):
+    print("get_weight_value_for_adjust")
+    data= "02 30 30 30 31 52 30 30 33 34 30 30"
+    send_data(data,port)
+    print(serialPort.readline().decode('Ascii'))
+    print(serialPort.readline().decode('Ascii'))
+
+def set_weight_value_for_adjust(port):
+    print("set_weight_value_for_adjust")
+    data= "02 30 30 30 31 57 30 30 33 34 30 35 32 30 30 30 30"
+    send_data(data,port)
+    print(serialPort.readline().decode('Ascii'))
+    print(serialPort.readline().decode('Ascii'))
+
 
 
 def stop_sending(port):
@@ -192,6 +299,7 @@ def send_factory_reset(port):
     data =  "02 30 30 30 31 45 31 30 30 33 30 30"
     data =  "02 30 30 30 31 45 45 45 45 45 30 30" 
     send_data(data,port)
+    sleep(2)
     print(serialPort.readline().decode('Ascii'))
     print(serialPort.readline().decode('Ascii'))
     print(serialPort.readline().decode('Ascii'))
@@ -211,7 +319,9 @@ def calc_lrc(data_in_bytes):
     lrc = 0
     for b in data_in_bytes[1:]:
         lrc ^= b
+    lrc=55
     lrc = str(lrc)
+    print(lrc)
     return lrc
 
 
@@ -282,13 +392,13 @@ if __name__ == '__main__':
     serialPort = starte_port()
 
     try:
-        get_weight_unit(serialPort)
-        #set_weight_unit(serialPort)
-        set_weight_unit_v1(serialPort)
-        #get_range_mode(serialPort)
-        #get_max_weight(serialPort)
+       # set_scale_adj(serialPort)
+       # get_scale_adj(serialPort)
+
+#        do_initial_adj(serialPort)
+#        get_zero_indicator(serialPort)
         get_weight_value(serialPort)
-        #get_seal_status(serialPort)
+        #start_sending(serialPort)
     except KeyboardInterrupt:
         print("Program terminated manually!")
         stop_sending(serialPort)
