@@ -1,6 +1,7 @@
 import serial
 from binascii import hexlify
 from time import sleep
+from time import time as clock
 
 def starte_port():
     serialPort = serial.Serial('/dev/ttyS0')
@@ -8,7 +9,7 @@ def starte_port():
     serialPort.paritiy = serial.PARITY_NONE
     serialPort.stopbits = serial.STOPBITS_ONE
     serialPort.bytesize = serial.EIGHTBITS
-    serialPort.timeout = 1
+    serialPort.timeout = 0.05
     return serialPort
 
 
@@ -52,34 +53,61 @@ def get_all(port):
     print(serialPort.readline().decode('Ascii'))
     print(serialPort.readline().decode('Ascii'))
 
+def set_weight_unit_v1(port):
+    print("ChatGPT")
+    data= "02 30 30 30 31 57 30 30 32 30 30 32 55 6B"
+    send_data(data,port)
+    print(serialPort.readline().decode('Ascii'))
 
 
 def set_weight_unit(port):
+    start=clock()
+    vorhin=start
     print("set_weight_unit")
 #    data= "02 30 30 30 31 57 30 30 32 30 30 32 30 32"
-    data_s= "02 30 30 30 31 57 30 30 32 30 30 32 "
-    for d in range(0,9):
-        for c in range(0,9):
+    data= "02 30 30 30 31 57 30 30 32 30 30 32 "
     
 
-            for a in range(0,9):
-                for b in range(0,9):
-                    t1=(str(d)+str(c))
-                    t2=(str(a)+str(b))
-                    t3=t1+' '+t2
-                    data = data_s +t3 
-                    print(data)
-                    send_data(data,port)
-                    strung=serialPort.readline().decode('Ascii')
-                    if len(strung) > 11:
-                        #print(strung[12])
-                        if strung[12]!='3':
-                            print('*********************** Achtung ******************************')
-                            print(strung)
-                            print(f' Hex : {a}{b}') 
-        #            print(serialPort.readline().decode('Ascii'))
-        #            print(serialPort.readline().decode('Ascii'))
-        #            sleep(1)
+   # for b in range(0,65535):
+    for a in range(0,255):
+        jetzt=clock()
+        gesamt=jetzt-start
+        durch = jetzt - vorhin
+        vorhin = jetzt
+        print(f'Durchlauf {a}; Gesamt: {gesamt}, Zeit pro Durchlauf: {durch}')
+
+        for b in range(0,255):
+    #        print(f'a={a} und b={b}')
+            data_in_bytes  = bytearray.fromhex(data)
+            t1=a.to_bytes(1,'big')
+            t2=b.to_bytes(1,'big')
+            data_in_bytes.extend(t1)
+    #        print(data_in_bytes)
+            data_in_bytes.extend(t2)
+            lrc = calc_lrc(data_in_bytes)
+            for c in lrc:
+                data_in_bytes.extend(c.encode())
+     
+            x = bytes.fromhex('03')
+            data_in_bytes.extend(x)
+    #        print(data_in_bytes)
+            serialPort.write(data_in_bytes)
+
+            #print(f'Frage : {data_in_bytes}')
+            strung=serialPort.readline().decode('Ascii')
+            if len(strung) > 11:
+#                print(f'Frage : {data_in_bytes}')
+
+ #               print(f'Falsche Antwort {strung}')
+                #print(strung[12])
+                if strung[12]!='3':
+                    print('*********************** Achtung ******************************')
+                    print(f'Antwort bekommen: {strung}; Frage: {data_in_bytes} mit{a} u  {b}')
+                    get_weight_value(port)
+                    get_weight_unit(port)
+    #            print(serialPort.readline().decode('Ascii'))
+    #            print(serialPort.readline().decode('Ascii'))
+    #            sleep(1)
 
 def get_max_weight(port):
     print("get_max_weight m1")
@@ -255,7 +283,8 @@ if __name__ == '__main__':
 
     try:
         get_weight_unit(serialPort)
-        set_weight_unit(serialPort)
+        #set_weight_unit(serialPort)
+        set_weight_unit_v1(serialPort)
         #get_range_mode(serialPort)
         #get_max_weight(serialPort)
         get_weight_value(serialPort)
