@@ -4,7 +4,7 @@ from time import sleep
 from time import time as clock
 
 def starte_port():
-    serialPort = serial.Serial('/dev/ttyS0')
+    serialPort = serial.Serial('/dev/ttyS2')
     serialPort.baudrate = 9600
     serialPort.paritiy = serial.PARITY_NONE
     serialPort.stopbits = serial.STOPBITS_ONE
@@ -28,10 +28,14 @@ def set_sending_speed_50(port):
     print(serialPort.readline().decode('Ascii'))
     print(serialPort.readline().decode('Ascii'))
 
+def start_sending(port):
+    data = "02 30 30 30 31 45 31 30 31 31 30 30"
+    send_data(data,port)
+    read_stream2(port)
  
 
 
-def start_sending(port):
+def start_sending2(port):
     data = "02 30 30 30 31 45 31 30 31 31 30 30"
     send_data(data,port)
     print(serialPort.readline().decode('Ascii'))
@@ -372,7 +376,7 @@ def read_gewicht(serialSubstring):
     
 
 def read_stream(port):
-    for i in range(100):
+    while True:
         serialString = []
         s_String = []
         s_String = serialPort.readline()
@@ -387,6 +391,14 @@ def read_stream(port):
             pass
 
 
+def read_stream2(port):
+    while True:
+        string2=port.read()
+
+
+        if string2 == '\n':
+            print('Neue Zeile')
+        print(string2)
 
 if __name__ == '__main__':
     serialPort = starte_port()
@@ -398,7 +410,7 @@ if __name__ == '__main__':
 #        do_initial_adj(serialPort)
 #        get_zero_indicator(serialPort)
         get_weight_value(serialPort)
-        #start_sending(serialPort)
+        start_sending2(serialPort)
     except KeyboardInterrupt:
         print("Program terminated manually!")
         stop_sending(serialPort)
