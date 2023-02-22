@@ -1,15 +1,26 @@
 import serial
 import subprocess
 import threading
+
+def calc_lrc(data_in_bytes):
+        lrc = 0
+        for b in data_in_bytes[1:]:
+            lrc ^= b
+        lrc=55
+        lrc = str(lrc)
+        print(lrc)
+        return lrc
+
+
 class Waage:
     def __init__(self):
-        self.port = starte_port()
+        self.port = self.starte_port()
         self.gewicht_anfang = 0
         self.gewicht_ende = 0
         self.deltagewicht = 0
         self.gewicht = 0
 
-    def starte_port():
+    def starte_port(self):
         serialPort = serial.Serial('/dev/ttyS4')
         serialPort.baudrate = 9600
         serialPort.paritiy = serial.PARITY_NONE
@@ -19,9 +30,9 @@ class Waage:
         return serialPort
 
     def lese_waage(self):
-        send_data()
-        serialSubString = read_data()
-        self.gewicht = read_gewicht(serialSubString)
+        self.send_data()
+        serialSubString = self.read_data()
+        self.read_gewicht(serialSubString)
 
     def send_data(self):
         data= "02 30 30 30 31 52 30 31 30 33 30 30"
@@ -35,30 +46,21 @@ class Waage:
         data_in_bytes.extend(x)
         self.port.write(data_in_bytes)
 
-    def calc_lrc(data_in_bytes):
-        lrc = 0
-        for b in data_in_bytes[1:]:
-            lrc ^= b
-        lrc=55
-        lrc = str(lrc)
-        print(lrc)
-        return lrc
-
-
+    
     def read_data(self):
         serialString=self.port.readline().decode('Ascii')
-        print(serialString[12:22])
-        serialSubString=serialString[12:22]
+        serialSubString=serialString[12:21]
+        print(serialSubString)
         return serialSubString
 
 
     def read_gewicht(self,serialSubstring):
         c = 0
         sign = 1
-        print(f"Am Ende {chr(serialSubstring[-1])}")
-        if(chr(serialSubstring[-1]) == 'k'):
+        print(f"Am Ende {serialSubstring[-1]}")
+
+        if(serialSubstring[-1] == 'k'):
             for count, s in enumerate(serialSubstring):
-                s=chr(s) 
                # print(s)
                 if s == ' ':
                     s = '0'
@@ -87,7 +89,6 @@ class Waage:
                         continue
         else:
             for count, s in enumerate(serialSubstring):
-                s=chr(s) 
                # print(s)
                 if s == ' ':
                     s = '0'
@@ -115,15 +116,16 @@ class Waage:
                         c += int(s) * 0.001
                         continue
 
-        self.gewicht=c
+        print(f"Gewicht: {c * sign}"  )
+        self.gewicht=c*sign
+        print(f"self.Gewicht: {self.gewicht}")
      
 
-    def waage_alive(self):
-        if self.waagethread.is_alive():
-            return True
+
 
     def waage_ablesen(self):
-        lese_waage()
+        self.lese_waage()
+        print(self.gewicht)
         return self.gewicht
 
     def set_gewicht_anfang(self):
@@ -139,4 +141,10 @@ class Waage:
         self.deltagewicht = self.gewicht_ende - self.gewicht_anfang
         print(self.deltagewicht)
         return self.deltagewicht
+
+if __name__ == '__main__':
+    waage = Waage()
+    waage.set_gewicht_anfang()
+    waage.set_gewicht_ende()
+    waage.delta_gewicht_lesen()
 
