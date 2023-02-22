@@ -11,50 +11,42 @@ import Waage as wg
 import Updater as upd
 from time import sleep
 from tkinter import ttk
-from pynput.mouse import Controller as Maus
+from pynput.mouse import Controller as Mouse
 
-# delta_weight = 0
+delta_weight = 0
+myduration = 2000
+gewicht_duration = 30000
 
-myduration = 2000  # Dauer zwischen Klappe zu und Content, damit die Waage Zeit zum Wiegen hat in MS
-gewicht_duration = 30000  # Dauer die der Gewichtcontent angezeigt wird in MS
-nummer_sicher_gpio = 500  # Dauer nach der der Gpio erneut ausegelesen werden soll.
+debounce = False
+debounce_time=1
 
-debounce = False  # Debounce
-debounce_time = 1  # Debounce Timer in Sekunden
+die_gpios = False
+import mraa
 
-die_gpios = False  # Sind wir auf einem Rock Pi mit GPIOs?
-try:
-
-    import mraa  # Fuer GPIOS
-
-    die_gpios = True
-except ImportError:
-    print("UPs")
-    die_gpios = False
+die_gpios = True
 
 
-def quit_me(e):  # Programm zu beenden, funkioniert nicht
+def quit_me(e):
     root.quit()
     print("Quit")
 
 
-# Ist is playing noetig? Siehe Cotentmanager
-def isplaying(player):  # Chechkob Video Player laeuft
+def isplaying(player):
     # print(player.should_run)
-    if player.should_run:  # Soll der Player laufen?
+    if player.should_run:
 
-        if not player.is_Playing():  # Falls er laufen soll, tut es aber nicht -> Restart
+        if not player.is_Playing():
             print("Restart")
             player._Play()
-        root.after(100, isplaying, player)  # Checke alle 0,1 Sekunden, ob der Player laeuft
+        root.after(100, isplaying, player)
 
 
-def start_waage():  # starte Kommunikatio mit der Waage NICHT MEHR BENOETIGT
+def start_waage():
     waage = threading.Thread(target=lese_waage)
     waage.start()
 
 
-def quit_video(f, player):  # ALT kann raus
+def quit_video(f, player):
     print("Video Killed")
     player._Quit()
     img = Image.open("/content/200/200grams_Conten_Gewicht_Einwurf-01.jpg")
@@ -67,51 +59,53 @@ def quit_video(f, player):  # ALT kann raus
     something = mainCanvas.create_image(0, 0, image=myimage, anchor=tk.NW)
 
 
-def tuer(pin):  # Callback fuer Tuer GPIO
-    global nummer_sicher_gpio
+def tuer(pin):
+
     global debounce
     print(debounce)
-    if not debounce:  # Timer fuer Button debounce
-        debounce = True
-        root.after(1000, change_debounce)
-        a = pin.read()
-        root.after(nummer_sicher_gpio, read_tuer_oncemore, a,
-                   pin)  # Lese nach einer Sekunde erneut den GPIO um sicher zu gehen
+    print(pin.read())
+    old=pin.read()
+    if pin.read() > 0:
+        tuer_auf()
+        root.after(2000,checke_tuer_status,pin,old)
+        return
+    tuer_zu()
 
 
-def read_tuer_oncemore(a, pin):  # Lese GPIO erneut
-    if a == pin.read():  # Wenn der GPIO der gleiche Wert wie vorher, dann mache etwas
-        if pin.read() > 0:  # entscheide ob Tuer auf oder zu gegangen ist
-            tuer_auf()
-            return
-        tuer_zu()
-
-
-def change_debounce():  # setze DEbounce zurueck
+def change_debounce():
     global debounce
-
     print(debounce)
     debounce = False
 
-
-def tuer_auf():  # Tuer geht auf, zeige offen Content und messe Gewicht
+def tuer_auf():
     print("auf")
     contentmanager.tuer_auf()
     waage.set_gewicht_anfang()
 
 
-def tuer_zu():  # Tuer zu,
-    # myduration = 3000
+def checke_tuer_status(pin,old):
+     
+    if old == pin.read():
+        old=pin.read()
+        print("Alles ok")
+        print(pin.read())
+        root.after(2000,checke_tuer_status,pin,old)
+        return
+    tuer(pin)
+    print("Nicht alles ok")
+
+
+def tuer_zu():
+    #myduration = 3000
     print("zu")
     # waage.set_gewicht_ende()
-    contentmanager.tuer_zu()  # sage dem Contentmanager, dass die tuer zu ist
-    root.after(myduration, gewicht_routine)  # warte nach dem schliesen der tuer myduration um zu wiegen
-    # damit die Waage zeit hat sich einzupendeln
+    contentmanager.tuer_zu()
+    root.after(myduration, gewicht_routine)
+    # contentmanager.show_weight_content(waage.delta_gewicht_lesen())
 
 
 def gewicht_routine():
     contentmanager.show_weight_content(waage.delta_gewicht_lesen(), gewicht_duration)
-    # schicke Gewicht an Contentmanager und zeige das Gewicht an solange gewicht_duration
 
 
 def fakepin0(pin):
@@ -126,19 +120,18 @@ def fakepin1(pin):
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    # Move Mouse out of the Way
-    maus = Maus()
-    maus.position = (10000, 10000)
-
-    os.chdir('/home/rock/TBB')  # Set working directory
-
-    updater = upd.Updater()  # Starte USB Updater
-
     # Set the TKinter Frames
+    maus=Mouse()
+    maus.position=(10000,10000)
+    os.chdir('/home/rock/TBB')
+
+    updater = upd.Updater()
     root = tk.Tk()
+    print(os.getcwd())
+    print(os.getcwd())
 
     root.attributes('-fullscreen', True)
-    # root.geometry("600x400")
+#    root.geometry("600x400")
 
     # set Serial Connection
     try:
@@ -184,5 +177,7 @@ if __name__ == '__main__':
 
     # Drucke Q fuer Quit
     root.bind("q", quit_me)
+    #    root.bind(player.Event, player._Play, player)  #
+    #   root.after(100, isplaying, player)
 
     root.mainloop()
