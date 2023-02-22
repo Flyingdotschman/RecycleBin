@@ -188,10 +188,8 @@ def get_weight_value(port):
     print("get_weight_value")
     data= "02 30 30 30 31 52 30 31 30 33 30 30"
     send_data(data,port)
-    print(serialPort.readline().decode('Ascii'))
-    print(serialPort.readline().decode('Ascii'))
-    print(serialPort.readline().decode('Ascii'))
-
+    serialString=serialPort.readline().decode('Ascii')
+    print(serialString[12:22])
 def get_tare(port):
     print("get_tare")
     data= "02 30 30 30 31 52 30 31 30 32 30 30"
@@ -350,6 +348,7 @@ def send_data(data,serialPort):
 def read_gewicht(serialSubstring):
     c = 0
     sign = 1
+    print(f"Am Ende {chr(serialSubstring[-1])}")
     for count, s in enumerate(serialSubstring):
         s=chr(s) 
        # print(s)
@@ -360,6 +359,8 @@ def read_gewicht(serialSubstring):
             sign = -1 
             print("MINUS!!!!")
             continue
+        if count == 4:
+            print(s)
         if s.isnumeric(): 
             if count == 2:
                 c += int(s) * 10
@@ -376,8 +377,7 @@ def read_gewicht(serialSubstring):
             if count == 7:
                 c += int(s) * 0.001
                 continue
-        print(c)
-    gewicht = c*sign*4
+    gewicht=c
     print(gewicht)
     
 
@@ -387,7 +387,7 @@ def read_stream(port):
         s_String = []
         s_String = serialPort.readline()
         print(s_String)
-        serialSubstring=s_String[13:21]
+        serialSubstring=s_String[13:22]
         print(serialSubstring)
         read_gewicht(serialSubstring)
 
@@ -415,8 +415,10 @@ if __name__ == '__main__':
 
 #        do_initial_adj(serialPort)
 #        get_zero_indicator(serialPort)
-        get_weight_value(serialPort)
-        start_sending2(serialPort)
+#        reset_device(serialPort)
+        while True:
+            get_weight_value(serialPort)
+        #start_sending2(serialPort)
     except KeyboardInterrupt:
         print("Program terminated manually!")
         stop_sending(serialPort)
