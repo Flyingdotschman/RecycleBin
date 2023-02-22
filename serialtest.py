@@ -4,7 +4,7 @@ from time import sleep
 from time import time as clock
 
 def starte_port():
-    serialPort = serial.Serial('/dev/ttyS2')
+    serialPort = serial.Serial('/dev/ttyS4')
     serialPort.baudrate = 9600
     serialPort.paritiy = serial.PARITY_NONE
     serialPort.stopbits = serial.STOPBITS_ONE
@@ -138,6 +138,12 @@ def get_max_weight(port):
     data= "02 30 30 30 31 52 30 30 32 35 30 30"
     send_data(data,port)
     print(serialPort.readline().decode('Ascii'))
+    print(serialPort.readline().decode('Ascii'))
+
+def set_baurate(port):
+    print('Setting BaudRate')
+    data_m1="02 30 30 30 31 57 30 30 31 30 30 31 34"
+    send_data(data_m1,port)
     print(serialPort.readline().decode('Ascii'))
 
 
