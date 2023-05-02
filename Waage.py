@@ -139,7 +139,9 @@ class Waage:
     def delta_gewicht_lesen(self):
         self.set_gewicht_ende()
         self.deltagewicht = self.gewicht_ende - self.gewicht_anfang
-        print(self.deltagewicht)
+        print(f"Anfang : {self.gewicht_anfang}")
+        print(f"Ende: {self.gewicht_ende}")
+        print(f'Delta Gewicht : {self.deltagewicht}')
         return self.deltagewicht
 
 if __name__ == '__main__':

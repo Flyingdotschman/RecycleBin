@@ -14,7 +14,7 @@ from tkinter import ttk
 from pynput.mouse import Controller as Mouse
 
 delta_weight = 0
-myduration = 2000
+myduration = 20
 gewicht_duration = 30000
 
 debounce = False
@@ -62,14 +62,17 @@ def quit_video(f, player):
 def tuer(pin):
 
     global debounce
-    print(debounce)
+    debounce = True
+    print(f'Tuer_Offen : {contentmanager.tuer_offen}')
     print(pin.read())
     old=pin.read()
-    if pin.read() > 0:
-        tuer_auf()
-        root.after(2000,checke_tuer_status,pin,old)
-        return
+    if pin.read() > 0  :
+        if not contentmanager.tuer_offen:
+            tuer_auf()
+            root.after(2000,checke_tuer_status,pin,old)
+            return
     tuer_zu()
+    root.after(2000,checke_tuer_status,pin,old)
 
 
 def change_debounce():
@@ -80,27 +83,36 @@ def change_debounce():
 def tuer_auf():
     print("auf")
     contentmanager.tuer_auf()
+    #contenmanager.tuer_offen = True
     waage.set_gewicht_anfang()
 
 
 def checke_tuer_status(pin,old):
-     
-    if old == pin.read():
-        old=pin.read()
-        print("Alles ok")
-        print(pin.read())
-        root.after(2000,checke_tuer_status,pin,old)
-        return
-    tuer(pin)
-    print("Nicht alles ok")
+    global debounce
+    debounce = False
+    if pin.read() > 0  :
+       if not contentmanager.tuer_offen:
+           tuer_auf()
+           root.after(2000,checke_tuer_status,pin,old)
+           return
+    if not pin.read() > 0  :
+        if contentmanager.tuer_offen:
+            tuer_zu()
+            root.after(2000,checke_tuer_status,pin,old)
+            return
+
+
+    print("Alles ok")
 
 
 def tuer_zu():
     #myduration = 3000
     print("zu")
     # waage.set_gewicht_ende()
-    contentmanager.tuer_zu()
-    root.after(myduration, gewicht_routine)
+    if contentmanager.tuer_offen:
+        contentmanager.tuer_zu()
+    #contenmanager.tuer_offen=False
+        root.after(myduration, gewicht_routine)
     # contentmanager.show_weight_content(waage.delta_gewicht_lesen())
 
 
@@ -120,64 +132,66 @@ def fakepin1(pin):
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    # Set the TKinter Frames
-    maus=Mouse()
-    maus.position=(10000,10000)
-    os.chdir('/home/rock/TBB')
+    while True:
+        try:
+            
+            # Set the TKinter Frames
+            maus=Mouse()
+            maus.position=(10000,10000)
+            os.chdir('/home/rock')
+            try:
+                updater = upd.Updater()
+            except e:
+                print("Something went wrong with the Content Update")
+                print(f"The error was: {e}")
+                sleep(8)
 
-    updater = upd.Updater()
-    root = tk.Tk()
-    print(os.getcwd())
-    print(os.getcwd())
+            root = tk.Tk()
+            print(os.getcwd())
+            print(os.getcwd())
 
-    root.attributes('-fullscreen', True)
-#    root.geometry("600x400")
+            root.attributes('-fullscreen', True)
+       #     root.geometry("600x400")
 
-    # set Serial Connection
-    try:
-        serialPort = serial.Serial('/dev/ttyACM0')
-    except:
-        tt = subprocess.Popen(["chmod", "666", "/dev/ttyACM0"], stdout=subprocess.PIPE)
-        print("Popen")
-        print(tt)
-        serialPort = serial.Serial('/dev/ttyACM0')
+            # set Serial Connection
+               # set GPIO Schalter
+            pin = 8
+            if die_gpios:
+                pin = mraa.Gpio(pin)
+                pin.dir(mraa.DIR_IN)
+                pin.isr(mraa.EDGE_BOTH, tuer, pin)
+                # pin.isr(mraa.EDGE_FALLING, tuer_zu, pin)
+            else:
+                class pin():
+                    num = 1
 
-    # set GPIO Schalter
-    pin = 8
-    if die_gpios:
-        pin = mraa.Gpio(pin)
-        pin.dir(mraa.DIR_IN)
-        pin.isr(mraa.EDGE_BOTH, tuer, pin)
-        # pin.isr(mraa.EDGE_FALLING, tuer_zu, pin)
-    else:
-        class pin():
-            num = 1
+                    def __init__(self):
+                        self.num = 1
 
-            def __init__(self):
-                self.num = 1
+                    def read(self):
+                        return self.num
 
-            def read(self):
-                return self.num
+                    def num1(self):
+                        self.num = 1
 
-            def num1(self):
-                self.num = 1
-
-            def num0(self):
-                self.num = 0
+                    def num0(self):
+                        self.num = 0
 
 
-        pin = pin()
-        root.bind("x", lambda eff: fakepin0(pin))
-        root.bind("c", lambda eff: fakepin1(pin))
-    # Starte Waage
-    waage = wg.Waage(serialPort)
-    print(waage.gewicht)
-    contentmanager = cont.ContentManager(root)
-    # Starte Player
+                pin = pin()
+                root.bind("x", lambda eff: fakepin0(pin))
+                root.bind("c", lambda eff: fakepin1(pin))
+            # Starte Waage
+            waage = wg.Waage()
+            print(waage.gewicht)
+            contentmanager = cont.ContentManager(root)
+            # Starte Player
 
-    # Drucke Q fuer Quit
-    root.bind("q", quit_me)
-    #    root.bind(player.Event, player._Play, player)  #
-    #   root.after(100, isplaying, player)
+            # Drucke Q fuer Quit
+            root.bind("q", quit_me)
+            #    root.bind(player.Event, player._Play, player)  #
+            #   root.after(100, isplaying, player)
 
-    root.mainloop()
+            root.mainloop()
+        except:
+            pass

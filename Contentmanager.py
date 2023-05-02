@@ -138,9 +138,11 @@ class ContentManager:
         self.mainCanvas.itemconfigure(self.imageThingy, image=[])
 
     def show_weight_content(self, weight, show_duration):
+        if self.tuer_offen:
+            return
         k = 0
         weight = weight * 1000
-        print(weight)
+        print(f'weight contentmanager : {weight}')
         for i, w in enumerate(self.dic_list):
             if weight >= w:
                 k = i
