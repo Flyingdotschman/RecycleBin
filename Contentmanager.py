@@ -56,8 +56,14 @@ class ContentManager:
         # Starte das erste Mal Dauercontent
         content = os.listdir(os.path.join(self.current_directory, '0'))
         print(content)
-        content = os.path.join(self.current_directory, '0', content[0])
         print(content)
+
+        for i, f in enumerate(content):
+            if f.startswith('.'):
+                continue
+            break
+        content = os.path.join(self.current_directory, '0', content[i])
+
         self.content = content
         self.content_type = self.video_or_image(self.content)
         self.content_should_run = True
@@ -120,7 +126,11 @@ class ContentManager:
             pass
         content = os.listdir(os.path.join(self.current_directory, new_content))
         # print(content)
-        content = os.path.join(self.current_directory, new_content, content[0])
+        for i, f in enumerate(content):
+            if f.startswith('.'):
+                continue
+            break
+        content = os.path.join(self.current_directory, new_content, content[i])
         if content == self.content:
             print("Same content")
             return
