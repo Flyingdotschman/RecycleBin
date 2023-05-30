@@ -32,7 +32,6 @@ def quit_me(e):
 
 
 def isplaying(player):
-    # print(player.should_run)
     if player.should_run:
         if not player.is_Playing():
             print("Restart")
@@ -49,11 +48,8 @@ def quit_video(f, player):
     print("Video Killed")
     player._Quit()
     img = Image.open("/content/200/200grams_Conten_Gewicht_Einwurf-01.jpg")
-    # img = Image.open("/home/pi/PeopleCounter_V3/Master.png")
     img = img.resize((400, 400), Image.ANTIALIAS)
     myimage = ImageTk.PhotoImage(img)
-    #  mainCanvas = tk.Canvas(f)
-    # mainCanvas.pack(fill='both', expand=True)
     mainCanvas.configure(bg="green")
     something = mainCanvas.create_image(0, 0, image=myimage, anchor=tk.NW)
 
@@ -82,7 +78,6 @@ def change_debounce():
 def tuer_auf():
     print("auf")
     contentmanager.tuer_auf()
-    # contenmanager.tuer_offen = True
     waage.set_gewicht_anfang()
 
 
@@ -104,14 +99,10 @@ def checke_tuer_status(pin, old):
 
 
 def tuer_zu():
-    # myduration = 3000
     print("zu")
-    # waage.set_gewicht_ende()
     if contentmanager.tuer_offen:
         contentmanager.tuer_zu()
-        # contenmanager.tuer_offen=False
         root.after(myduration, gewicht_routine)
-    # contentmanager.show_weight_content(waage.delta_gewicht_lesen())
 
 
 def gewicht_routine():
@@ -148,7 +139,6 @@ if __name__ == "__main__":
             print(os.getcwd())
 
             root.attributes("-fullscreen", True)
-            #     root.geometry("600x400")
 
             # set Serial Connection
             # set GPIO Schalter
@@ -157,7 +147,6 @@ if __name__ == "__main__":
                 pin = mraa.Gpio(pin)
                 pin.dir(mraa.DIR_IN)
                 pin.isr(mraa.EDGE_BOTH, tuer, pin)
-                # pin.isr(mraa.EDGE_FALLING, tuer_zu, pin)
             else:
 
                 class pin:
@@ -186,8 +175,6 @@ if __name__ == "__main__":
 
             # Drucke Q fuer Quit
             root.bind("q", quit_me)
-            #    root.bind(player.Event, player._Play, player)  #
-            #   root.after(100, isplaying, player)
 
             root.mainloop()
         except:

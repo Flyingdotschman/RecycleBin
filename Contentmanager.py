@@ -28,7 +28,6 @@ class ContentManager:
         self.mainCanvas = tk.Canvas(self.frame)
         self.mainCanvas.pack(fill='both', expand=True)
         self.imageThingy = self.mainCanvas.create_image(0, 0, image=[], anchor=tk.NW) # Platzhalter fuer image in Canvas
-        # os.chdir('/home/dotsch/TBB')
 
         # Generiere ContentListe
         self.current_directory = os.getcwd()
@@ -46,7 +45,7 @@ class ContentManager:
                 del dic_list[i]
         dic_list=dic_list2
         dic_list.sort()
-        print(dic_list)
+        #print(dic_list)
         self.dic_list = dic_list
 
         #Iinitialize Player
@@ -55,8 +54,8 @@ class ContentManager:
 
         # Starte das erste Mal Dauercontent
         content = os.listdir(os.path.join(self.current_directory, '0'))
-        print(content)
-        print(content)
+        #print(content)
+        #print(content)
 
         for i, f in enumerate(content):
             if f.startswith('.'):
@@ -92,7 +91,7 @@ class ContentManager:
         img = img.resize((1080, 1920))
         self.myimage = ImageTk.PhotoImage(img)
         self.mainCanvas.itemconfigure(self.imageThingy, image=self.myimage)
-        print(self.mainCanvas.winfo_id())
+        #print(self.mainCanvas.winfo_id())
 
     def run_dauer_content(self):  #Nicht mehr benoetigt
         if self.dauer_content_type == 'video':
@@ -105,13 +104,12 @@ class ContentManager:
         img = img.resize((400, 400))
         self.myimage = ImageTk.PhotoImage(file=self.dauer_content)
         self.mainCanvas.configure(bg="blue")
-        something = self.mainCanvas.create_image(0, 0, image=self.myimage, anchor=tk.NW)
-        print(something)
+        #something = self.mainCanvas.create_image(0, 0, image=self.myimage, anchor=tk.NW)
+        #print(something)
 
 
 # IsPlaying indentisch mit methide aus main.py, pruefen welche noetig ist
     def isplaying(self):
-        # print(player.should_run)
         if self.content_should_run:
 
             if not self.player.is_Playing():
@@ -125,7 +123,6 @@ class ContentManager:
         except:
             pass
         content = os.listdir(os.path.join(self.current_directory, new_content))
-        # print(content)
         for i, f in enumerate(content):
             if f.startswith('.'):
                 continue
@@ -188,7 +185,6 @@ class ContentManager:
 
 if __name__ == "__main__":
     root = tk.Tk()
-    # root.geometry("600x400")
     content_manager = ContentManager(root)
 
     root.mainloop()
